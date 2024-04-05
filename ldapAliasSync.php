@@ -30,7 +30,7 @@ class ldapAliasSync extends rcube_plugin {
 	// Plugin initialization
 	function init() {
 		try {
-			$this->log_debug('Initialising...');
+			//$this->log_debug('Initialising...');
 
 			// Load general roundcube config settings
 			$this->load_config('config.inc.php');
@@ -303,7 +303,7 @@ class ldapAliasSync extends rcube_plugin {
 			$identity['signature'] = $ldap_temp[0];
 		}
 
-		if ( preg_match('/^\s*<[a-zA-Z]+/', $identity['signature']) ) {
+		if ( isset($identity['signature']) && preg_match('/^\s*<[a-zA-Z]+/', $identity['signature']) ) {
 			$identity['html_signature'] = 1;
 		} else {
 			$identity['html_signature'] = 0;
@@ -517,21 +517,11 @@ class ldapAliasSync extends rcube_plugin {
 		$SCHEMES = array('ldap', 'ldaps', 'ldapi');
 
 		// Set default values for empty config parameters
-		if (! $config['scheme']) {
-			$config['scheme'] = 'ldap';
-		}
-		if (! $config['server']) {
-			$config['server'] = 'localhost';
-		}
-		if (! $config['port']) {
-			$config['port'] = '389';
-		}
-		if (! $config['bind_dn']) {
-			$config['bind_dn'] = '';
-		}
-		if (! $config['bind_pw']) {
-			$config['bind_pw'] = '';
-		}
+		$config['scheme'] = $config['scheme'] ?? 'ldap';
+		$config['server'] = $config['server'] ?? 'localhost';
+		$config['port'] = $config['port'] ?? '389';
+		$config['bind_dn'] = $config['bind_dn'] ?? '';
+		$config['bind_pw'] = $config['bind_pw'] ?? '';
 
 		// Check parameters with fixed value set
 		if (! in_array($config['scheme'], $SCHEMES)) {
@@ -543,15 +533,9 @@ class ldapAliasSync extends rcube_plugin {
 
 	function check_mail_config($config) {
 		// Set default values for empty config parameters
-		if (! $config['search_domain']) {
-			$config['search_domain'] = '';
-		}
-		if (! $config['replace_domain']) {
-			$config['replace_domain'] = false;
-		}
-		if (! $config['dovecot_separator']) {
-			$config['dovecot_separator'] = '';
-		}
+		$config['search_domain'] = $config['search_domain'] ?? '';
+		$config['replace_domain'] = $config['replace_domain'] ?? false;
+		$config['dovecot_separator'] = $config['dovecot_separator'] ?? '';
 
 		// Check parameter combinations
 		if ($config['replace_domain'] && ! $config['search_domain']) {
@@ -567,66 +551,60 @@ class ldapAliasSync extends rcube_plugin {
 		$NDATTRS  = array('stop', 'skip');
 
 		// Set default values for empty config parameters
-		if (! $config['base_dn']) {
-			$config['base_dn'] = '';
+		$config['base_dn'] = $config['base_dn'] ?? '';
+		$config['filter'] = $config['filter'] ?? '(objectClass=*)';
+		$config['deref'] = $config['deref'] ?? 'never';
+		$config['mail_by'] = $config['mail_by'] ?? 'attribute';
+		if (isset($config['attr_mail']) && $config['attr_mail']) {
+		    $config['attr_mail'] = strtolower($config['attr_mail']);
 		}
-		if (! $config['filter']) {
-			$config['filter'] = '(objectClass=*)';
+		else {
+		    $config['attr_mail'] = 'mail';
 		}
-		if (! $config['deref']) {
-			$config['deref'] = 'never';
+		if (isset($config['attr_local']) && $config['attr_local']) {
+		    $config['attr_local'] = strtolower($config['attr_local']);
 		}
-		if (! $config['mail_by']) {
-			$config['mail_by'] = 'attribute';
+		else {
+		    $config['attr_local'] = '';
 		}
-		if (! $config['attr_mail']) {
-			$config['attr_mail'] = 'mail';
-		} else {
-			$config['attr_mail'] = strtolower($config['attr_mail']);
+		if (isset($config['attr_dom']) && $config['attr_dom']) {
+		    $config['attr_dom'] = strtolower($config['attr_dom']);
 		}
-		if (! $config['attr_local']) {
-			$config['attr_local'] = '';
-		} else {
-			$config['attr_local'] = strtolower($config['attr_local']);
+		else {
+		    $config['attr_dom'] = '';
 		}
-		if (! $config['attr_dom']) {
-			$config['attr_dom'] = '';
-		} else {
-			$config['attr_dom'] = strtolower($config['attr_dom']);
+		$config['domain_static'] = $config['domain_static'] ?? '';
+		$config['ignore_domains'] = $config['ignore_domains'] ?? array();
+		$config['non_domain_attr'] = $config['non_domain_attr'] ?? 'stop';
+		if (isset($config['attr_name']) && $config['attr_name']) {
+		    $config['attr_name'] = strtolower($config['attr_name']);
 		}
-		if (! $config['domain_static']) {
-			$config['domain_static'] = '';
+		else {
+		    $config['attr_name'] = '';
 		}
-		if (! $config['ignore_domains']) {
-			$config['ignore_domains'] = array();
+		if (isset($config['attr_org']) && $config['attr_org']) {
+		    $config['attr_org'] = strtolower($config['attr_org']);
 		}
-		if (! $config['non_domain_attr']) {
-			$config['non_domain_attr'] = 'stop';
+		else {
+		    $config['attr_org'] = '';
 		}
-		if (! $config['attr_name']) {
-			$config['attr_name'] = '';
-		} else {
-			$config['attr_name'] = strtolower($config['attr_name']);
+		if (isset($config['attr_reply']) && $config['attr_reply']) {
+		    $config['attr_reply'] = strtolower($config['attr_reply']);
 		}
-		if (! $config['attr_org']) {
-			$config['attr_org'] = '';
-		} else {
-			$config['attr_org'] = strtolower($config['attr_org']);
+		else {
+		    $config['attr_reply'] = '';
 		}
-		if (! $config['attr_reply']) {
-			$config['attr_reply'] = '';
-		} else {
-			$config['attr_reply'] = strtolower($config['attr_reply']);
+		if (isset($config['attr_bcc']) && $config['attr_bcc']) {
+		    $config['attr_bcc'] = strtolower($config['attr_bcc']);
 		}
-		if (! $config['attr_bcc']) {
-			$config['attr_bcc'] = '';
-		} else {
-			$config['attr_bcc'] = strtolower($config['attr_bcc']);
+		else {
+		    $config['attr_bcc'] = '';
 		}
-		if (! $config['attr_sig']) {
-			$config['attr_sig'] = '';
-		} else {
-			$config['attr_sig'] = strtolower($config['attr_sig']);
+		if (isset($config['attr_sig']) && $config['attr_sig']) {
+		    $config['attr_sig'] = strtolower($config['attr_sig']);
+		}
+		else {
+		    $config['attr_sig'] = '';
 		}
 
 		// Override values
@@ -827,26 +805,25 @@ class ldapAliasSync extends rcube_plugin {
 			$config['update_empty_fields'] = false;
 		}
 
-                // Override values
-                switch ( $config['log_level'] ) {
-                        case 'debug':
-                                $config['log_level'] = 3;
-                                break;
-                        case 'info':
-                                $config['log_level'] = 2;
-                                break;
-                        case 'warning':
-                                $config['log_level'] = 1;
-                                break;
-                        case 'error':
-                                $config['log_level'] = 0;
-                                break;
-                }
-
+		// Override values
+		switch ( $config['log_level'] ) {
+			case 'debug':
+				$config['log_level'] = 3;
+				break;
+			case 'info':
+				$config['log_level'] = 2;
+				break;
+			case 'warning':
+				$config['log_level'] = 1;
+				break;
+			case 'error':
+				$config['log_level'] = 0;
+				break;
+		}
 		// Check parameters with fixed value set
-                if (! in_array($config['log_level'], $LOG_LEVELS)) {
-                        throw new Exception('[general] log_level "'.$config['log_level'].'" is invalid');
-                }
+		if (! in_array($config['log_level'], $LOG_LEVELS)) {
+			throw new Exception('[general] log_level "'.$config['log_level'].'" is invalid');
+		}
 
 		return $config;
 	}
