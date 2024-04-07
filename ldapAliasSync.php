@@ -312,20 +312,22 @@ class ldapAliasSync extends rcube_plugin {
 		// Get e-mail address
 		switch ( $config['mail_by'] ) {
 			case 'attribute':
-				$ldap_temp = $ldap_id[$config['attr_mail']];
-				$ldap_temp = is_array($ldap_temp) ? $ldap_temp : array();
-				foreach ( $ldap_temp as $attr ) {
-					if ( strstr($attr, '@') ) {
-						$domain_expl = explode('@', $attr);
-						$domain = $domain_expl[1];
-						if ( $domain && ! in_array( $domain, $config['ignore_domains']) ) {
-							$identity['email'] = $attr;
-							if ( ! $identity['name'] ) {
-								$identity_expl = explode('@', $attr);
-								$identity['name'] = $identity_expl[0];
+				if ( isset($ldap_id[$config['attr_mail']]) ) {
+					$ldap_temp = $ldap_id[$config['attr_mail']];
+					$ldap_temp = is_array($ldap_temp) ? $ldap_temp : array();
+					foreach ( $ldap_temp as $attr ) {
+						if ( strstr($attr, '@') ) {
+							$domain_expl = explode('@', $attr);
+							$domain = $domain_expl[1];
+							if ( $domain && ! in_array( $domain, $config['ignore_domains']) ) {
+								$identity['email'] = $attr;
+								if ( ! $identity['name'] ) {
+									$identity_expl = explode('@', $attr);
+									$identity['name'] = $identity_expl[0];
+								}
+								array_push($identities, $identity);
+								$this->log_debug("Found address ".$identity['email']);
 							}
-							array_push($identities, $identity);
-							$this->log_debug("Found address ".$identity['email']);
 						}
 					}
 				}
